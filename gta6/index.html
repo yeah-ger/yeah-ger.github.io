@@ -102,11 +102,12 @@ const now=()=>Date.now()+off;
 const cv=$("c"),cx=cv.getContext("2d");let W,H,DPR,HZ;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);HZ=H*.5;build()}
 function rnd(s){return()=>(s=(s*16807)%2147483647)/2147483647}
-let city=[],stars=[],hills=[];
+let city=[],stars=[],hills=[],cityW=1;
 function build(){const r=rnd(7);city=[];let x=-40;
   while(x<W*2+80){const w=10+r()*30,tall=r()<.13,h=(tall?.13:.03)*H+r()*H*(tall?.08:.05),win=[];
     for(let yy=6;yy<h-4;yy+=7)for(let xx=3;xx<w-3;xx+=5)if(r()<.45)win.push([xx,yy,r()]);
     city.push({x,w,h,win,ant:tall&&r()<.5});x+=w+(r()<.25?r()*8:1)}
+  cityW=x;
   stars=Array.from({length:150},()=>[r()*W,r()*HZ*.85,r()*1.3+.2,r()*6.3]);
   hills=Array.from({length:9},(_,i)=>[i/8,.04+r()*.05])}
 addEventListener("resize",resize);
@@ -114,8 +115,8 @@ addEventListener("resize",resize);
 // road
 const SEG=200,RW=2200,LEN=1600,DRAW=150,CAMH=950,DEPTH=.84;
 const curveAt=n=>Math.sin(n/97)*2.2+Math.sin(n/41+1)*1.2+Math.sin(n/233)*1.6;
-const LINES=["雷奥尼达 欢迎你","VICE CITY 等你回家","油门踩到底","霓虹不打烊","今晚也是好天气","11.19 不见不散","系好安全带","阳光 海滩 罪城"];
-let pos=0,bgX=0,speed=0,dash=0;
+const HIST=["1997 · GTA 初代问世","1999 · GTA 2","2001 · GTA III 闯入 3D","2002 · 罪恶都市","2004 · 圣安地列斯","2008 · GTA IV","2013 · GTA V","2023.12.05 · VI 首支预告","2025.05.06 · VI 第二支预告","2026.11.19 · 欢迎来到雷奥尼达"];
+let pos=0,bgX=0,speed=-1,dash=0;
 
 const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t)),rgb=c=>`rgb(${c})`;
 function quad(c,x1,y1,w1,x2,y2,w2){cx.fillStyle=c;cx.beginPath();cx.moveTo(x1-w1,y1);cx.lineTo(x2-w2,y2);cx.lineTo(x2+w2,y2);cx.lineTo(x1+w1,y1);cx.closePath();cx.fill()}
@@ -142,10 +143,10 @@ function frame(ts){
   // target speed: cruise 88 → 320 in final 30 days, 360 final minute
   const k=Math.max(0,Math.min(1,1-left/(30*864e5)));
   let target=done?40:left<60e3?360:88+232*Math.pow(k,1.6);
-  if(ts<1400)target=0;
+  if(speed<0)speed=target;
   speed+=(target-speed)*.025;
   const dt=Math.min(.05,(t-(frame.l||t))/1000);frame.l=t;
-  pos=(pos+speed*dt*55)%(SEG*LEN);
+  pos+=speed*dt*55;
   // sky colors: dusk early → deep night near launch → sunrise after
   const night=done?.2:Math.min(1,.35+k*.65);
   const top=mix([40,22,96],[8,4,26],night),mid=mix([206,70,140],[60,16,92],night),low=mix([255,156,86],[255,64,120],night*.7);
@@ -164,7 +165,7 @@ function frame(ts){
   // hills + city (parallax with curves)
   const hc=rgb(mix([96,30,110],[30,10,58],night));cx.fillStyle=hc;cx.beginPath();cx.moveTo(0,HZ);
   for(let x=0;x<=W;x+=8){const u=(x+bgX*.3)/W;cx.lineTo(x,HZ-H*(.035+.03*Math.sin(u*6.2)+.02*Math.sin(u*17+1)))}cx.lineTo(W,HZ);cx.fill();
-  const cc=rgb(mix([62,18,76],[12,5,30],night)),cw=W*2+80,ox=((bgX*.6)%cw+cw)%cw;
+  const cc=rgb(mix([62,18,76],[12,5,30],night)),cw=cityW,ox=((bgX*.6)%cw+cw)%cw;
   city.forEach(c=>{let x=c.x-ox;if(x<-60)x+=cw;if(x>W+40)return;cx.fillStyle=cc;cx.fillRect(x,HZ-c.h,c.w,c.h);
     if(c.ant){cx.fillRect(x+c.w/2-1,HZ-c.h-18,2,18);cx.fillStyle=(Math.floor(t/600)%2)?"#ff3d8b":"#3a0f2a";cx.fillRect(x+c.w/2-2,HZ-c.h-20,4,4)}
     const on=.2+night*.8;c.win.forEach(w=>{if(w[2]<on){cx.fillStyle=w[2]<.3?"rgba(122,247,255,.8)":w[2]<.65?"rgba(255,198,92,.85)":"rgba(255,61,139,.8)";cx.fillRect(x+w[0],HZ-c.h+w[1],2,3)}})});
@@ -185,12 +186,20 @@ function frame(ts){
     quad(shade(alt?[34,22,62]:[30,19,56]),a.X,a.Y,a.Wd,b.X,b.Y,b.Wd);
     if(alt){quad(shade([255,230,245]),a.X,a.Y,a.Wd*.018,b.X,b.Y,b.Wd*.018);
       quad(shade([200,180,220]),a.X-a.Wd*.5,a.Y,a.Wd*.01,b.X-b.Wd*.5,b.Y,b.Wd*.01);quad(shade([200,180,220]),a.X+a.Wd*.5,a.Y,a.Wd*.01,b.X+b.Wd*.5,b.Y,b.Wd*.01)}}
+  // road text far → near
+  const dl0=Math.max(0,Math.floor(left/864e5));
+  cx.textAlign="center";cx.textBaseline="alphabetic";
+  for(let i=DRAW-8;i>=1;i--){const p=P[i];if(p.n%30)continue;const q=P[i+7];if(!q||q.Y>=p.Y)continue;
+    const k=p.n/30,txt=k%2?(done?"已解锁 · 出发":(dl0>0?`还有 ${dl0} 天`:"最后 24 小时")):HIST[(k/2)%HIST.length];
+    const hgt=p.Y-q.Y;if(hgt<2)continue;const fog=Math.min(1,i/DRAW*1.6);
+    cx.save();cx.font='900 100px -apple-system,"PingFang SC",sans-serif';const tw=cx.measureText(txt).width;
+    const wid=(p.Wd+q.Wd)*.8;cx.translate((p.X+q.X)/2,p.Y);cx.transform(wid/tw,0,(q.X-p.X)/hgt*0,hgt/86,0,0);
+    cx.globalAlpha=1-fog*.85;cx.shadowColor=k%2?"#ffc65c":"#ff3d8b";cx.shadowBlur=18;
+    cx.fillStyle=k%2?"#ffe9a8":"#fff0f7";cx.fillText(txt,0,0);cx.restore()}
   // sprites far → near
   const day=Math.floor((n+8*36e5)/864e5),dleft=Math.max(0,Math.ceil(left/864e5));
   for(let i=DRAW-1;i>1;i--){const p=P[i],m=p.n,s=p.Wd/380;if(s<.02)continue;
-    if(m%24===0){const side=(m/24)%2?1:-1,txt=(m/24)%3===0?(done?"已解锁":`还有 ${dleft} 天`):LINES[(m/24+day)%LINES.length];
-      board(p.X+side*p.Wd*1.9,p.Y,s,txt,(m/24)%3===0)}
-    else if(m%6===0){palm(p.X-p.Wd*1.55,p.Y,s,t);palm(p.X+p.Wd*1.55,p.Y,s*1.05,t)}
+    if(m%6===0){palm(p.X-p.Wd*1.55,p.Y,s,t);palm(p.X+p.Wd*1.55,p.Y,s*1.05,t)}
     else if(m%6===3){lamp(p.X-p.Wd*1.25,p.Y,s,-1);lamp(p.X+p.Wd*1.25,p.Y,s,1)}}
   // speed streaks
   const sp=Math.max(0,(speed-140)/220);
