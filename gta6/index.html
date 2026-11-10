@@ -24,24 +24,34 @@ html,body{height:100%;background:#0b0618;color:#fff;overflow:hidden;font-family:
 .when b{color:#7af7ff;font-weight:600}
 
 /* dashboard */
-.dash{position:fixed;left:0;right:0;bottom:0;z-index:3;padding:0 12px max(14px,env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none}
-.cluster{position:relative;width:min(560px,100%);aspect-ratio:2.05/1;border-radius:999px 999px 26px 26px;
+.dash{position:fixed;left:0;right:0;bottom:0;z-index:3;padding:0 6px max(10px,env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none}
+.cluster{position:relative;width:min(680px,100%);aspect-ratio:1.72/1;border-radius:999px 999px 26px 26px;
  background:radial-gradient(120% 140% at 50% 100%,rgba(30,8,52,.92),rgba(10,3,22,.86) 60%,rgba(10,3,22,.55));
  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,140,200,.16),0 -10px 50px rgba(0,0,0,.55),0 0 40px rgba(192,77,255,.18);
  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow:hidden;opacity:0;transform:translateY(30px);transition:opacity .9s,transform .9s cubic-bezier(.2,.8,.2,1)}
 .on .cluster{opacity:1;transform:none}
 #g{position:absolute;inset:0;width:100%;height:100%}
-.center{position:absolute;left:50%;top:30%;transform:translateX(-50%);text-align:center}
-.days{font:clamp(64px,19vw,128px)/.88 "Anton";letter-spacing:.01em;color:#fff;text-shadow:0 0 22px rgba(255,61,139,.8),0 0 60px rgba(192,77,255,.45),0 3px 0 #5a0d3a}
+.center{position:absolute;left:50%;top:23%;transform:translateX(-50%);text-align:center}
+.days{position:relative;font:clamp(96px,30vw,190px)/.86 "Anton";letter-spacing:.01em;color:#f4fdff;
+ text-shadow:-3px 0 rgba(255,61,139,.85),3px 0 rgba(45,226,212,.85),0 0 28px rgba(122,247,255,.55),0 0 70px rgba(192,77,255,.4);animation:flick 5s infinite}
+.days::after{content:"";position:absolute;inset:-4px -10px;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px);pointer-events:none;mix-blend-mode:multiply}
+@keyframes flick{0%,96%,100%{opacity:1;transform:none}97%{opacity:.75;transform:translateX(2px) skewX(-3deg)}98%{opacity:1;transform:translateX(-2px)}}
+.hudbox{position:absolute;left:50%;top:13%;width:62%;height:70%;transform:translateX(-50%);pointer-events:none;
+ background:linear-gradient(#7af7ff,#7af7ff) 0 0/18px 2px,linear-gradient(#7af7ff,#7af7ff) 0 0/2px 18px,linear-gradient(#7af7ff,#7af7ff) 100% 0/18px 2px,linear-gradient(#7af7ff,#7af7ff) 100% 0/2px 18px,
+ linear-gradient(#ff3d8b,#ff3d8b) 0 100%/18px 2px,linear-gradient(#ff3d8b,#ff3d8b) 0 100%/2px 18px,linear-gradient(#ff3d8b,#ff3d8b) 100% 100%/18px 2px,linear-gradient(#ff3d8b,#ff3d8b) 100% 100%/2px 18px;background-repeat:no-repeat;
+ filter:drop-shadow(0 0 4px #7af7ff);opacity:.8}
+.hudbox::before{content:"T-MINUS · 距发售";position:absolute;top:-4px;left:50%;transform:translate(-50%,-100%);font:9px/1 "Anton";letter-spacing:.35em;color:#7af7ff;white-space:nowrap}
+.hudbox::after{content:"";position:absolute;left:4px;right:4px;height:1px;top:0;background:linear-gradient(90deg,transparent,rgba(122,247,255,.7),transparent);animation:scan 3.2s linear infinite}
+@keyframes scan{to{top:100%}}
 .dl{font:10px/1 "Anton";letter-spacing:.4em;color:#ffc65c;margin-top:4px;margin-left:.4em}
 .dl small{font:10px/1 -apple-system,"PingFang SC",sans-serif;letter-spacing:.15em;color:#ffd9ec;opacity:.8}
 .odo{display:inline-flex;gap:2px;margin-top:9px;padding:4px 7px;border-radius:7px;background:#05020c;box-shadow:inset 0 0 0 1px rgba(122,247,255,.25),0 0 14px rgba(122,247,255,.15)}
-.odo span{display:inline-block;width:.62em;text-align:center;font:clamp(17px,4.6vw,26px)/1.1 "Anton";color:#7af7ff;text-shadow:0 0 8px #2de2d4}
+.odo span{display:inline-block;width:.62em;text-align:center;font:clamp(24px,7vw,40px)/1.1 "Anton";color:#7af7ff;text-shadow:0 0 8px #2de2d4}
 .odo span.sep{width:.32em;color:#ff3d8b;text-shadow:0 0 8px #ff3d8b}
-.side{position:absolute;bottom:17%;font:9px/1.2 "Anton";letter-spacing:.2em;color:#ffe3f0;opacity:.85;text-align:center}
+.side{position:absolute;bottom:12%;font:9px/1.2 "Anton";letter-spacing:.2em;color:#ffe3f0;opacity:.85;text-align:center}
 .side b{display:block;font:clamp(17px,4.4vw,24px)/1 "Anton";letter-spacing:.02em;margin-top:3px}
 .side small{font:9px/1 -apple-system,"PingFang SC",sans-serif;letter-spacing:.05em;opacity:.7}
-.sl{left:9%}.sl b{color:#ff6a9e}.sr{right:9%}.sr b{color:#ffc65c}
+.sl{left:5%}.sl b{color:#ff6a9e}.sr{right:5%}.sr b{color:#ffc65c}
 .lamp{position:absolute;bottom:7%;left:50%;transform:translateX(-50%);display:flex;gap:10px}
 .lamp i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12)}
 .lamp i.on{background:#5df2a0;box-shadow:0 0 8px #5df2a0}
@@ -72,13 +82,12 @@ html,body{height:100%;background:#0b0618;color:#fff;overflow:hidden;font-family:
 <div class="final" id="final"></div>
 <div class="dash" id="dash"><div class="cluster">
   <svg id="g" viewBox="0 0 560 273" preserveAspectRatio="none"></svg>
-  <div class="center"><div class="days" id="days">--</div><div class="dl">DAYS <small>天</small></div>
+  <div class="hudbox"></div><div class="center"><div class="days" id="days">--</div><div class="dl">DAYS <small>天</small></div>
    <div class="odo" id="odo"></div></div>
   <div class="side sl">SPEED<b id="spd">0</b><small>km/h</small></div>
   <div class="side sr">TO GO<b id="pct">0%</b><small>剩余旅程</small></div>
   <div class="lamp"><i id="l1"></i><i id="l2"></i><i id="l3"></i><i class="r" id="l4"></i></div>
 </div></div>
-<div class="foot">PS5 / Xbox Series X|S · 粉丝自制，非官方</div>
 <div class="flash" id="flash"></div>
 <script>
 (()=>{
