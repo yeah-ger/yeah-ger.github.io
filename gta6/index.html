@@ -13,6 +13,9 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#07020f;color:#fff;overflow:hidden;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#bv,#bvt{position:fixed;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s;pointer-events:none}
+#bvt{background:linear-gradient(180deg,rgba(60,14,110,.55),rgba(150,30,120,.25) 45%,rgba(0,0,0,0) 70%);mix-blend-mode:screen}
+body.vid #bv,body.vid #bvt{opacity:1}
 .top{position:fixed;left:0;right:0;top:0;padding:max(16px,env(safe-area-inset-top)) 18px 0;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:3}
 .kick{font:10px/1 "Anton";letter-spacing:.55em;color:#ffe3c9;opacity:.75;margin-left:.55em}
 .title{font:clamp(30px,8.4vw,76px)/.9 "Anton";margin-top:7px;letter-spacing:.02em;
@@ -75,6 +78,8 @@ html,body{height:100%;background:#07020f;color:#fff;overflow:hidden;font-family:
 </style>
 </head>
 <body>
+<video id="bv" src="bg.mp4" muted playsinline autoplay loop preload="auto" disablepictureinpicture></video>
+<div id="bvt"></div>
 <canvas id="c"></canvas>
 <div class="top"><div class="kick">Leonida · Vice City</div><div class="title">GRAND THEFT AUTO<i>VI</i></div>
 <div class="when"><b>11月19日 周四 00:00</b> · 北京时间解锁</div></div>
@@ -103,7 +108,7 @@ const cv=$("c"),cx=cv.getContext("2d");let W,H,DPR,HZ;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
   // iOS 主屏幕 Web App：视口比屏幕少一截状态栏高度，底部会露黑边 → 按整屏铺满
   if(navigator.standalone){const portrait=innerHeight>=innerWidth,sh=portrait?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width);if(sh>H)H=sh}
-  cv.style.height=H+"px";$("dash").style.bottom=(innerHeight-H)+"px";cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);HZ=H*.5;build()}
+  cv.style.height=H+"px";$("dash").style.bottom=(innerHeight-H)+"px";cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);HZ=H*.5;if(typeof VID!="undefined"&&VID){bv.style.height=H+"px";HZ=H*.5}build()}
 function rnd(s){return()=>(s=(s*16807)%2147483647)/2147483647}
 let city=[],stars=[],hills=[],cityW=1;
 function build(){const r=rnd(7);city=[];let x=-40;
@@ -141,6 +146,9 @@ function board(x,y,s,txt,hot){cx.save();cx.translate(x,y);cx.scale(s,s);
   cx.font=`700 ${txt.length>8?30:38}px -apple-system,"PingFang SC",sans-serif`;cx.fillText(txt,0,-260);cx.restore()}
 
 let fw=[];
+const bv=$("bv");let VID=false;
+bv.addEventListener("playing",()=>{if(!VID){VID=true;document.body.classList.add("vid");resize()}});
+const tryPlay=()=>{const p=bv.play();p&&p.catch(()=>{})};tryPlay();addEventListener("touchstart",tryPlay,{once:true});
 function frame(ts){
   const t=ts||0,n=now(),left=T-n,done=left<=0;
   // target speed: cruise 88 → 320 in final 30 days, 360 final minute
@@ -153,6 +161,8 @@ function frame(ts){
   // sky colors: dusk early → deep night near launch → sunrise after
   const night=done?.2:Math.min(1,.35+k*.65);
   const top=mix([40,22,96],[8,4,26],night),mid=mix([206,70,140],[60,16,92],night),low=mix([255,156,86],[255,64,120],night*.7);
+  if(VID){cx.clearRect(0,0,W,H);bv.playbackRate=Math.max(.5,Math.min(2.5,speed/110))}
+  if(!VID){
   let g=cx.createLinearGradient(0,0,0,HZ);g.addColorStop(0,rgb(top));g.addColorStop(.6,rgb(mid));g.addColorStop(1,rgb(low));
   cx.fillStyle=g;cx.fillRect(0,0,W,HZ+2);
   stars.forEach(s=>{cx.globalAlpha=night*(.4+.6*Math.sin(t*.002+s[3]));cx.fillStyle="#fff";cx.fillRect(s[0],s[1],s[2],s[2])});cx.globalAlpha=1;
@@ -174,6 +184,7 @@ function frame(ts){
     const on=.2+night*.8;c.win.forEach(w=>{if(w[2]<on){cx.fillStyle=w[2]<.3?"rgba(122,247,255,.8)":w[2]<.65?"rgba(255,198,92,.85)":"rgba(255,61,139,.8)";cx.fillRect(x+w[0],HZ-c.h+w[1],2,3)}})});
   // ground
   let gr=cx.createLinearGradient(0,HZ,0,H);gr.addColorStop(0,rgb(mix([70,20,80],[22,6,44],night)));gr.addColorStop(1,"#07020f");cx.fillStyle=gr;cx.fillRect(0,HZ,W,H-HZ);
+  }
   // road projection
   const base=Math.floor(pos/SEG),pct=(pos%SEG)/SEG;
   let x=0,dx=-curveAt(base)*pct,maxy=H;const P=[];
@@ -181,7 +192,7 @@ function frame(ts){
     const sc=DEPTH/Math.max(1,z)*1.0;const X=W/2-x*sc*W/2,Y=HZ+sc*CAMH*H/2*.9,Wd=sc*RW*W/2;
     P.push({X,Y,Wd,sc,n:nIdx,clip:maxy});x+=dx;dx+=curveAt(nIdx)*1.0;}
   bgX+=curveAt(base)*speed*dt*.9;
-  for(let i=DRAW-1;i>0;i--){const a=P[i-1],b=P[i];if(b.Y>=a.Y)continue;
+  if(!VID)for(let i=DRAW-1;i>0;i--){const a=P[i-1],b=P[i];if(b.Y>=a.Y)continue;
     const alt=Math.floor(b.n/3)%2,fog=Math.min(1,i/DRAW*1.4);
     const shade=c=>rgb(mix(c,[60,18,80],fog*.8));
     quad(shade(alt?[26,8,46]:[20,6,38]),a.X,a.Y,a.Wd*3,b.X,b.Y,b.Wd*3);
@@ -201,7 +212,7 @@ function frame(ts){
     cx.fillStyle=k%2?"#ffe9a8":"#fff0f7";cx.fillText(txt,0,0);cx.restore()}
   // sprites far → near
   const day=Math.floor((n+8*36e5)/864e5),dleft=Math.max(0,Math.ceil(left/864e5));
-  for(let i=DRAW-1;i>1;i--){const p=P[i],m=p.n,s=p.Wd/380;if(s<.02)continue;
+  if(!VID)for(let i=DRAW-1;i>1;i--){const p=P[i],m=p.n,s=p.Wd/380;if(s<.02)continue;
     if(m%6===0){palm(p.X-p.Wd*1.55,p.Y,s,t);palm(p.X+p.Wd*1.55,p.Y,s*1.05,t)}
     else if(m%6===3){lamp(p.X-p.Wd*1.25,p.Y,s,-1);lamp(p.X+p.Wd*1.25,p.Y,s,1)}}
   // speed streaks
