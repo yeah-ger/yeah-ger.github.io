@@ -50,13 +50,6 @@ html,body{height:100%;background:var(--ink);color:#fff;overflow:hidden;
 .meta b{color:#7af7ff;font-weight:600}
 .meta .dim{opacity:.7}
 
-.regions{margin-top:10px;display:flex;gap:7px;overflow-x:auto;max-width:min(980px,100%);padding:3px 4px 5px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
- -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.regions::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;border:0;cursor:pointer;color:#fff;font-size:12px;padding:7px 12px;border-radius:999px;white-space:nowrap;
- background:rgba(25,6,45,.55);box-shadow:inset 0 0 0 1px rgba(255,170,215,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:.25s}
-.chip.on{background:linear-gradient(90deg,#ff3d8b,#ff6a3d);box-shadow:0 0 22px rgba(255,61,139,.6);font-weight:600}
-.chip.done::after{content:" ✓";color:#7af7ff}
 
 /* ---- HUD: minimap ---- */
 .hud{flex:1 1 0!important;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:6px}
@@ -82,20 +75,15 @@ html,body{height:100%;background:var(--ink);color:#fff;overflow:hidden;
 .b2 .fg{background:linear-gradient(90deg,#2a7bff,#7af7ff);box-shadow:0 0 10px #7af7ff}
 .b2 .bt b{color:#7af7ff}
 
-/* ---- unlock wave (slim) ---- */
-.wave{margin-top:8px;width:min(760px,100%);padding:9px 14px 6px;border-radius:14px;background:rgba(12,3,26,.5);
- box-shadow:inset 0 0 0 1px rgba(122,247,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.wave h3{font:10px/1 "Anton";letter-spacing:.26em;color:#7af7ff;display:flex;justify-content:space-between;align-items:center;font-weight:normal}
-.wave h3 span{font:10px/1 -apple-system,"PingFang SC",sans-serif;letter-spacing:.06em;color:#ffd9ec;opacity:.75}
-.track{position:relative;height:22px;margin-top:6px}
-.rail{position:absolute;left:0;right:0;top:9px;height:2px;border-radius:2px;background:rgba(255,255,255,.12)}
-.fill{position:absolute;left:0;top:9px;height:2px;border-radius:2px;background:linear-gradient(90deg,#2de2d4,#ff3d8b,#ffc65c);box-shadow:0 0 10px #ff3d8b;width:0}
-.node{position:absolute;top:5px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#1b0b33;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35);cursor:pointer;transition:.3s}
-.node.lit{background:#ffc65c;box-shadow:0 0 12px #ffc65c}
-.node.sel{transform:scale(1.5);box-shadow:0 0 0 2px #fff,0 0 14px #ff3d8b}
-.now{position:absolute;top:1px;width:2px;height:18px;margin-left:-1px;background:#fff;box-shadow:0 0 8px #fff;display:none}
 .foot{margin-top:6px;font-size:9.5px;color:#ffd9ec;opacity:.45;text-align:center;line-height:1.4}
 
+.final{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:5;
+ font:clamp(160px,48vw,520px)/1 "Anton";color:#fff;text-shadow:0 0 40px #ff3d8b,0 0 90px #c04dff,0 8px 0 #5a0d3a}
+.fin .final{display:flex}
+.fin .final.pop{animation:pop .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{0%{transform:scale(1.6);opacity:0;filter:blur(8px)}25%{opacity:1;filter:none}100%{transform:scale(.92);opacity:.85}}
+.shake{animation:shk .25s linear infinite}
+@keyframes shk{25%{transform:translate(2px,-2px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}}
 .launched .clock{display:none}
 .banner{display:none;margin-top:22px;font:clamp(34px,8vw,84px)/1 "Anton";letter-spacing:.06em;text-align:center;
  background:linear-gradient(90deg,#2de2d4,#fff,#ff3d8b,#ffc65c,#2de2d4);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pan 4s linear infinite}
@@ -121,10 +109,10 @@ html,body{height:100%;background:var(--ink);color:#fff;overflow:hidden;
     <div class="colon">:</div>
     <div class="unit"><div class="digits" id="s"></div><div class="lbl">SEC<small>秒</small></div></div>
   </div>
-  <div class="banner" id="banner">MISSION PASSED<small>你的地区已解锁 · 欢迎来到雷奥尼达</small></div>
+  <div class="banner" id="banner">MISSION PASSED<small>已解锁 · 欢迎来到雷奥尼达</small></div>
+  <div class="final" id="final"></div>
 
   <div class="meta" id="meta"></div>
-  <div class="regions" id="regions"></div>
 
   <div class="hud" id="hud">
     <div class="wanted" id="wanted"><em>HYPE<small>期待值</small></em><div class="st" id="st"><i></i><i></i><i></i><i></i><i></i></div></div>
@@ -135,62 +123,27 @@ html,body{height:100%;background:var(--ink);color:#fff;overflow:hidden;
     </div>
   </div>
 
-  <div class="wave">
-    <h3>GLOBAL UNLOCK WAVE <span>全球午夜接力解锁</span></h3>
-    <div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div><div class="now" id="now"></div></div>
-  </div>
-  <div class="foot">各地当地 11 月 19 日零点解锁（PS5 / Xbox Series X|S），以商店账号地区为准 · 粉丝自制，非官方</div>
+  <div class="foot">PS5 / Xbox Series X|S · 粉丝自制，非官方</div>
 </div>
 
 <script>
 (()=>{
 // ---------- data ----------
-const R=[
- {k:"nz",n:"新西兰",f:"🇳🇿",tz:"Pacific/Auckland",u:"Wed 2026-11-18 7:00 PM HKT (UTC+08:00)",z:"NZDT"},
- {k:"au",n:"澳大利亚东部",f:"🇦🇺",tz:"Australia/Sydney",u:"Wed 2026-11-18 9:00 PM HKT (UTC+08:00)",z:"AEDT"},
- {k:"jp",n:"日本 · 韩国",f:"🇯🇵",tz:"Asia/Tokyo",u:"Wed 2026-11-18 11:00 PM HKT (UTC+08:00)",z:"JST"},
- {k:"hk",n:"港澳台 · 新马",f:"🇭🇰",tz:"Asia/Hong_Kong",u:"Thu 2026-11-19 12:00 AM HKT (UTC+08:00)",z:"UTC+8"},
- {k:"th",n:"泰国 · 印尼",f:"🇹🇭",tz:"Asia/Bangkok",u:"Thu 2026-11-19 1:00 AM HKT (UTC+08:00)",z:"UTC+7"},
- {k:"in",n:"印度",f:"🇮🇳",tz:"Asia/Kolkata",u:"Thu 2026-11-19 2:30 AM HKT (UTC+08:00)",z:"IST"},
- {k:"ae",n:"阿联酋",f:"🇦🇪",tz:"Asia/Dubai",u:"Thu 2026-11-19 4:00 AM HKT (UTC+08:00)",z:"GST"},
- {k:"sa",n:"沙特 · 土耳其",f:"🇸🇦",tz:"Asia/Riyadh",u:"Thu 2026-11-19 5:00 AM HKT (UTC+08:00)",z:"UTC+3"},
- {k:"ee",n:"东欧 · 以色列 · 南非",f:"🇬🇷",tz:"Europe/Athens",u:"Thu 2026-11-19 6:00 AM HKT (UTC+08:00)",z:"EET"},
- {k:"eu",n:"西欧 · 中欧",f:"🇪🇺",tz:"Europe/Paris",u:"Thu 2026-11-19 7:00 AM HKT (UTC+08:00)",z:"CET"},
- {k:"uk",n:"英国 · 爱尔兰 · 葡萄牙",f:"🇬🇧",tz:"Europe/London",u:"Thu 2026-11-19 8:00 AM HKT (UTC+08:00)",z:"GMT"},
- {k:"br",n:"巴西",f:"🇧🇷",tz:"America/Sao_Paulo",u:"Thu 2026-11-19 11:00 AM HKT (UTC+08:00)",z:"BRT"},
- {k:"us",n:"美国 · 加拿大",f:"🇺🇸",tz:"America/New_York",u:"Thu 2026-11-19 1:00 PM HKT (UTC+08:00)",z:"EST"},
- {k:"mx",n:"墨西哥 · 中美洲",f:"🇲🇽",tz:"America/Mexico_City",u:"Thu 2026-11-19 2:00 PM HKT (UTC+08:00)",z:"CST"}
-];
+const R=[{k:"cn",n:"北京时间",tz:"Asia/Shanghai",u:"Thu 2026-11-19 12:00 AM"}];
 // Date strings above are in a human-readable form; convert to UTC epoch robustly
 function parseHK(s){const m=s.match(/(\d{4})-(\d{2})-(\d{2}) (\d{1,2}):(\d{2}) (AM|PM)/);let h=+m[4]%12;if(m[6]==="PM")h+=12;
   return Date.UTC(+m[1],+m[2]-1,+m[3],h-8,+m[5]);}
 R.forEach(r=>r.t=parseHK(r.u));
 const START=parseHK("Tue 2023-12-05 7:00 AM");      // 首支预告
 const T2=parseHK("Tue 2025-05-06 10:00 PM");        // 第二支预告
-const W0=R[0].t, W1=R[R.length-1].t;
 let userTZ="Asia/Shanghai";try{userTZ=Intl.DateTimeFormat().resolvedOptions().timeZone||userTZ}catch(e){}
-const guess={"Asia/Shanghai":"hk","Asia/Hong_Kong":"hk","Asia/Taipei":"hk","Asia/Singapore":"hk","Asia/Kuala_Lumpur":"hk","Asia/Macau":"hk","Asia/Chongqing":"hk","Asia/Urumqi":"hk",
- "Asia/Tokyo":"jp","Asia/Seoul":"jp","Pacific/Auckland":"nz","Australia/Sydney":"au","Australia/Melbourne":"au","Asia/Bangkok":"th","Asia/Jakarta":"th","Asia/Kolkata":"in",
- "Asia/Dubai":"ae","Asia/Riyadh":"sa","Europe/Istanbul":"sa","Europe/London":"uk","Europe/Dublin":"uk","Europe/Lisbon":"uk","America/Sao_Paulo":"br","America/Mexico_City":"mx"};
 const store={get(k){try{return window.localStorage.getItem(k)}catch(e){return null}},set(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}};
-let sel=store.get("gta6-region")||guess[userTZ]||(userTZ.startsWith("Europe/")?"eu":userTZ.startsWith("America/")?"us":"hk");
-if(!R.find(r=>r.k===sel))sel="hk";
-const cur=()=>R.find(r=>r.k===sel);
+const cur=()=>R[0];
 
 // ---------- UI ----------
 const $=id=>document.getElementById(id);
 const fmt=(t,tz,o)=>{try{return new Intl.DateTimeFormat("zh-CN",Object.assign({timeZone:tz,hour12:false},o)).format(t)}catch(e){return new Date(t).toLocaleString()}};
-const regBox=$("regions"),track=$("track");
-R.forEach(r=>{
-  const b=document.createElement("button");b.className="chip";b.textContent=r.f+" "+r.n;
-  b.onclick=()=>pick(r.k);regBox.appendChild(b);r.chip=b;
-  const n=document.createElement("div");n.className="node";n.style.left=((r.t-W0)/(W1-W0)*100)+"%";
-  n.title=r.n;n.onclick=()=>pick(r.k);track.appendChild(n);r.node=n;
-});
 let first=true,anim=null,Pd=0;
-function pick(k){sel=k;store.set("gta6-region",k);R.forEach(r=>{r.chip.classList.toggle("on",r.k===k);r.node.classList.toggle("sel",r.k===k)});
-  try{const c=cur().chip;regBox.scrollTo({left:c.offsetLeft-regBox.clientWidth/2+c.offsetWidth/2,behavior:first?"auto":"smooth"})}catch(e){}
-  if(!first)anim={f:Pd,t0:performance.now(),dur:1100};first=false;last={};render()}
 
 function cells(el,n){while(el.children.length<n){const c=document.createElement("div");c.className="cell";c.innerHTML="<span></span>";el.appendChild(c)}
   while(el.children.length>n)el.removeChild(el.lastChild)}
@@ -213,13 +166,11 @@ function render(){
   const d=Math.floor(left/864e5),h=Math.floor(left%864e5/36e5),m=Math.floor(left%36e5/6e4),s=Math.floor(left%6e4/1e3);
   setDigits("d",String(d).padStart(2,"0"));setDigits("h",String(h).padStart(2,"0"));setDigits("m",String(m).padStart(2,"0"));setDigits("s",String(s).padStart(2,"0"));
   P=progressOf(now,T);
-  const loc=fmt(T,r.tz,{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
-  const mine=fmt(T,userTZ,{month:"numeric",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"});
-  const same=fmt(T,userTZ,{hour:"2-digit",minute:"2-digit",day:"numeric"})===fmt(T,r.tz,{hour:"2-digit",minute:"2-digit",day:"numeric"});
-  const preTxt=now<pre?`PS5 预载还有 <b>${Math.ceil((pre-now)/864e5)}</b> 天`:"PS5 预载已开放";
-  $("meta").innerHTML=launched?`${r.f} ${r.n} 已于当地 ${loc} 解锁`:
-   `${r.f} ${r.n} · 当地 <b>${loc}</b> 解锁 <span class="dim">${r.z}</span><br>`+
-   (same?"":`你的时间 <b>${mine}</b> · `)+preTxt;
+  const preTxt=now<pre?`PS5 预载还有 <b>${Math.ceil((pre-now)/864e5)}</b> 天`:"PS5 预载已开放 · 提前下好";
+  $("meta").innerHTML=launched?"已于 11月19日 00:00 解锁":`<b>11月19日 周四 00:00</b> 解锁 <span class="dim">北京时间</span><br>`+preTxt;
+  const fin=!launched&&left<=60e3,fe=$("final");$("ui").classList.toggle("fin",fin);
+  if(fin){const v=String(Math.ceil(left/1e3));if(fe.textContent!==v){fe.textContent=v;fe.classList.remove("pop");void fe.offsetWidth;fe.classList.add("pop")}}
+  document.body.classList.toggle("shake",!launched&&left<=10e3);
   // HUD
   const p1=Math.min(100,Math.max(0,(now-START)/(T-START)*100)),p2=Math.min(100,Math.max(0,(now-F)/(T-F)*100));
   $("p1").textContent=p1.toFixed(3)+"%";$("p2").textContent=p2.toFixed(1)+"%";
@@ -227,11 +178,6 @@ function render(){
   const lv=[START,T2,F,pre,T-864e5].filter(x=>now>=x).length;
   [...$("st").children].forEach((e,i)=>e.classList.toggle("on",launched||i<lv));
   $("wanted").classList.toggle("alarm",launched||left<864e5);
-  // wave
-  const wp=(now-W0)/(W1-W0),nowEl=$("now");
-  if(wp>=0&&wp<=1){nowEl.style.display="block";nowEl.style.left=(wp*100)+"%"}else nowEl.style.display="none";
-  $("fill").style.width=(Math.max(0,Math.min(1,wp))*100)+"%";
-  R.forEach(x=>{const lit=now>=x.t;x.node.classList.toggle("lit",lit);x.chip.classList.toggle("done",lit)});
 }
 
 // ---------- minimap world ----------
@@ -405,7 +351,7 @@ function frame(t){
   drawRadar(t);
   requestAnimationFrame(frame)}
 
-pick(sel);resize();setInterval(render,250);
+resize();render();setInterval(render,250);
 setTimeout(resize,400);try{document.fonts&&document.fonts.ready.then(resize)}catch(e){}
 requestAnimationFrame(frame);
 })();
