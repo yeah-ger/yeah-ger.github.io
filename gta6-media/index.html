@@ -35,7 +35,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
 .v{position:fixed;inset:0;z-index:9;background:#000;display:none;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
 .v.open{display:block}
 .st{position:absolute;inset:0;overflow:hidden}
-.st img{position:absolute;left:0;top:0;max-width:none;max-height:none;transform-origin:0 0;will-change:transform;-webkit-user-drag:none}
+.st img{position:absolute;left:0;top:0;max-width:none;max-height:none;-webkit-user-drag:none;image-rendering:auto}
 #lo{filter:none}
 .ui{position:absolute;left:0;right:0;display:flex;gap:6px;align-items:center;padding:8px calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));background:rgba(0,0,0,.55);font-size:12px;flex-wrap:wrap}
 .top{top:0;padding-top:calc(8px + env(safe-area-inset-top))}
@@ -60,7 +60,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
   <div class="ui top"><button id="bx">✕</button><span class="t" id="tt"></span><span class="sp"></span><span id="ct"></span></div>
   <div class="ui bot">
     <button id="bp">‹</button><button id="bn">›</button>
-    <button id="bs">▶ 放映</button><button id="bo">顺序</button><button id="bf">适应</button><button id="bz">1:1</button><button id="bfs">全屏</button>
+    <button id="bs">▶ 放映</button><button id="bo">顺序</button><button id="bf">自动</button><button id="bz">1:1</button><button id="bfs">全屏</button>
     <a id="bd" download><button>原图</button></a>
     <span class="vars" id="vars"></span><span class="sp"></span><span id="inf"></span>
   </div>
@@ -69,7 +69,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
 
 <script>
 'use strict';
-var M, flat = [], secStart = [], cur = -1, curVar = null, manualVar = false, fit = 'contain';
+var M, flat = [], secStart = [], cur = -1, curVar = null, manualVar = false, fit = 'auto';
 var $ = function (id) { return document.getElementById(id); };
 var V = $('v'), ST = $('st'), LO = $('lo'), HI = $('hi');
 function mb(b) { return (b / 1048576).toFixed(1) + ' MB'; }
@@ -158,15 +158,11 @@ function closeV(fromRoute) {
 function src(v) { return 'o/' + v.f; }
 function thumb(v) { return 't/' + v.f.replace(/\.jpg$/, '.webp'); }
 
-function load(url) {
-  if (cache[url]) return cache[url].p;
-  var im = new Image(); im.decoding = 'async';
-  var p = new Promise(function (res, rej) {
-    im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(function () { res(im); }, function () { res(im); }); };
-    im.onerror = rej;
-  });
-  im.src = url; cache[url] = { im: im, p: p, t: Date.now() };
-  return p;
+function load(url) {   // network preload only; the visible <img> decodes the full original itself
+  if (cache[url]) return cache[url];
+  var im = new Image(), c = { im: im, ok: false };
+  im.onload = function () { c.ok = true; }; im.onerror = function () { delete cache[url]; };
+  im.src = url; cache[url] = c; return c;
 }
 function trim(keep) {
   Object.keys(cache).forEach(function (u) { if (keep.indexOf(u) < 0) { cache[u].im.src = ''; delete cache[u]; } });
@@ -185,20 +181,25 @@ function show() {
     b.onclick = function (ev) { ev.stopPropagation(); manualVar = true; curVar = x; show(); }; vs.appendChild(b);
   });
   view.nw = v.w; view.nh = v.h; resetView();
-  HI.style.visibility = 'hidden';
+  HI.style.visibility = 'hidden'; HI.onload = HI.onerror = null;
   LO.src = thumb(v); LO.style.visibility = 'visible';
-  $('ld').textContent = '原图加载中 · ' + mb(v.s);
-  load(u).then(function () {
+  $('ld').textContent = '原图加载中 · ' + mb(v.s); $('ld').onclick = null;
+  var n = flat[planNext], p = flat[(cur - 1 + flat.length) % flat.length];
+  var nu = src(pickVar(n.it)), pu = src(pickVar(p.it));
+  trim([u, nu, pu]);
+  HI.onload = function () {
     if (tok !== loadTok) return;
-    HI.src = u; HI.style.visibility = 'visible'; LO.style.visibility = 'hidden';
-    $('ld').textContent = '原图 ' + v.w + '×' + v.h;
-    // preload neighbours (one each side), keep at most 3 originals in memory
-    var n = flat[planNext], p = flat[(cur - 1 + flat.length) % flat.length];
-    var nu = src(pickVar(n.it)), pu = src(pickVar(p.it));
-    trim([u, nu, pu]);
-    load(nu).then(function () { if (tok === loadTok) load(pu); }, function () {});
-    if (playing) schedule();
-  }, function () { if (tok === loadTok) { $('ld').textContent = '原图加载失败，点击重试'; delete cache[u]; $('ld').onclick = show; } });
+    // decode() can stall on some browsers for hidden images, so never wait on it longer than 400 ms
+    Promise.race([HI.decode ? HI.decode() : Promise.resolve(), new Promise(function (r) { setTimeout(r, 400); })]).catch(function () {}).then(function () {
+      if (tok !== loadTok) return;
+      HI.style.visibility = 'visible'; LO.style.visibility = 'hidden';
+      $('ld').textContent = '原图 ' + v.w + '×' + v.h;
+      load(nu); load(pu);           // keep at most 3 originals around (current + neighbours)
+      if (playing) schedule();
+    });
+  };
+  HI.onerror = function () { if (tok === loadTok) { $('ld').textContent = '原图加载失败，点击重试'; $('ld').onclick = show; } };
+  if (HI.getAttribute('src') === u && HI.complete && HI.naturalWidth) HI.onload(); else HI.src = u;
   if (location.hash !== '#v' + cur) history.replaceState(null, '', '#v' + cur);
 }
 function go(d) { if (cur < 0) return; manualVar = false;
@@ -209,11 +210,14 @@ function go(d) { if (cur < 0) return; manualVar = false;
 function resetView() { view.s = 1; layout(); }
 function layout() {
   var W = innerWidth, H = innerHeight, nw = view.nw, nh = view.nh;
-  view.base = fit === 'contain' ? Math.min(W / nw, H / nh) : Math.max(W / nw, H / nh);
+  var cA = Math.min(W / nw, H / nh), cO = Math.max(W / nw, H / nh);
+  // auto: fill the whole screen when the crop is small (e.g. 16:9 photo on a 19.5:9 phone), otherwise show it whole
+  view.base = fit === 'contain' ? cA : fit === 'cover' ? cO : (cO / cA <= 1.3 ? cO : cA);
   var sc = view.base * view.s, w = nw * sc, h = nh * sc;
   if (view.s === 1) { view.x = (W - w) / 2; view.y = (H - h) / 2; }
   else { view.x = clamp(view.x, W - w, 0, W, w); view.y = clamp(view.y, H - h, 0, H, h); }
-  [LO, HI].forEach(function (im) { im.style.width = nw + 'px'; im.style.height = nh + 'px'; im.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + sc + ')'; });
+  // size the <img> at its on-screen size (no CSS scale transform): Safari then resamples from the full original instead of a downsized layer
+  [LO, HI].forEach(function (im) { var st = im.style; st.width = w + 'px'; st.height = h + 'px'; st.left = view.x + 'px'; st.top = view.y + 'px'; });
 }
 function clamp(p, min, max, W, w) { if (w <= W) return (W - w) / 2; return Math.min(max, Math.max(min, p)); }
 function zoomAt(newS, cx, cy) {
@@ -267,7 +271,7 @@ document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 $('bx').onclick = function () { closeV(); };
 $('bp').onclick = function () { go(-1); }; $('bn').onclick = function () { go(1); };
 $('bz').onclick = function () { toggle11(); };
-$('bf').onclick = function () { fit = fit === 'contain' ? 'cover' : 'contain'; this.textContent = fit === 'contain' ? '适应' : '铺满'; resetView(); };
+$('bf').onclick = function () { fit = fit === 'auto' ? 'contain' : fit === 'contain' ? 'cover' : 'auto'; this.textContent = { auto: '自动', contain: '完整', cover: '铺满' }[fit]; resetView(); };
 $('bfs').onclick = fs;
 $('bs').onclick = function () { playing ? stopPlay() : startPlay(); };
 $('bo').onclick = $('om').onclick = function () { setOrder(order === 'rnd' ? 'seq' : 'rnd'); };
@@ -280,7 +284,15 @@ function fs() {
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   else V.classList.add('hide'); // iPhone Safari: no element fullscreen -> hide controls
 }
-function schedule() { clearTimeout(playT); playT = setTimeout(function () { go(1); }, 10000); }
+function schedule() {
+  clearTimeout(playT);
+  playT = setTimeout(function tick() {
+    var c = cache[src(pickVar(flat[planNext].it))];
+    if (!c) { load(src(pickVar(flat[planNext].it))); playT = setTimeout(tick, 500); }
+    else if (!c.ok) playT = setTimeout(tick, 500);
+    else go(1);
+  }, 10000);
+}
 function startPlay() {
   playing = true; $('bs').textContent = '❚❚ 暂停'; $('bs').classList.add('on'); V.classList.add('hide'); schedule();
   if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {});
