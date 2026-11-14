@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000">
+<link rel="apple-touch-icon" href="icon.png">
+<title>GTA VI 官方媒体原图</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;color:#ddd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
+a{color:inherit}
+header{padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left))}
+header h1{font-size:17px;color:#fff}
+header p{font-size:12px;color:#888}
+nav{position:sticky;top:0;z-index:2;background:#000;border-bottom:1px solid #222;display:flex;overflow-x:auto;padding:0 env(safe-area-inset-right) 0 env(safe-area-inset-left);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;background:none;border:0;color:#999;font:inherit;padding:10px 12px;cursor:pointer}
+nav button.on{color:#fff;box-shadow:inset 0 -2px #fff}
+main{padding:0 calc(8px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left))}
+h2{font-size:14px;color:#fff;margin:16px 4px 6px;font-weight:600}
+h2 span{color:#777;font-weight:400;margin-left:6px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px}
+@media(max-width:480px){.g{grid-template-columns:repeat(2,1fr)}}
+.c{position:relative;background:#111;cursor:pointer;overflow:hidden;content-visibility:auto;contain-intrinsic-size:160px 120px}
+.c img{display:block;width:100%;height:100%;object-fit:cover}
+.c b{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:11px;font-weight:400;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.bar{display:flex;gap:8px;padding:8px 4px 0}
+.bar button,.v button{background:#1a1a1a;color:#ddd;border:1px solid #333;border-radius:6px;font:inherit;font-size:13px;padding:6px 10px;cursor:pointer}
+footer{color:#666;font-size:11px;padding:24px 4px 0}
+/* viewer */
+.v{position:fixed;inset:0;z-index:9;background:#000;display:none;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
+.v.open{display:block}
+.st{position:absolute;inset:0;overflow:hidden}
+.st img{position:absolute;left:0;top:0;max-width:none;max-height:none;transform-origin:0 0;will-change:transform;-webkit-user-drag:none}
+#lo{filter:none}
+.ui{position:absolute;left:0;right:0;display:flex;gap:6px;align-items:center;padding:8px calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));background:rgba(0,0,0,.55);font-size:12px;flex-wrap:wrap}
+.top{top:0;padding-top:calc(8px + env(safe-area-inset-top))}
+.bot{bottom:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.ui .sp{flex:1}
+.ui .t{color:#fff;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v.hide .ui{display:none}
+.v button.on{background:#fff;color:#000}
+#ld{position:absolute;right:calc(10px + env(safe-area-inset-right));top:calc(48px + env(safe-area-inset-top));font-size:11px;color:#aaa;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:4px}
+.v.hide #ld{display:none}
+.vars{display:flex;gap:4px;flex-wrap:wrap}
+.vars button{padding:3px 7px;font-size:11px}
+</style>
+</head>
+<body>
+<header><h1>GTA VI 官方媒体原图</h1><p id="sum">加载中…</p></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<div class="v" id="v">
+  <div class="st" id="st"><img id="lo" alt=""><img id="hi" alt=""></div>
+  <div class="ui top"><button id="bx">✕</button><span class="t" id="tt"></span><span class="sp"></span><span id="ct"></span></div>
+  <div class="ui bot">
+    <button id="bp">‹</button><button id="bn">›</button>
+    <button id="bs">▶ 放映</button><button id="bf">适应</button><button id="bz">1:1</button><button id="bfs">全屏</button>
+    <a id="bd" download><button>原图</button></a>
+    <span class="vars" id="vars"></span><span class="sp"></span><span id="inf"></span>
+  </div>
+  <div id="ld"></div>
+</div>
+
+<script>
+'use strict';
+var M, flat = [], secStart = [], cur = -1, curVar = null, manualVar = false, fit = 'contain';
+var $ = function (id) { return document.getElementById(id); };
+var V = $('v'), ST = $('st'), LO = $('lo'), HI = $('hi');
+function mb(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+
+fetch('manifest.json').then(function (r) { return r.json(); }).then(init).catch(function () { $('sum').textContent = '清单加载失败，请刷新'; });
+
+function init(m) {
+  M = m;
+  $('sum').textContent = m.count + ' 个原始文件 · ' + (m.bytes / 1073741824).toFixed(2) + ' GB · 全部来自 rockstargames.com/VI/media 官方下载包，未做任何压缩';
+  var nav = $('nav'), main = $('main');
+  m.sections.forEach(function (s, si) {
+    var b = document.createElement('button'); b.textContent = s.zh; b.onclick = function () { location.hash = 's' + si; showSec(si); };
+    nav.appendChild(b);
+    secStart.push(flat.length);
+    s.groups.forEach(function (g) { g.items.forEach(function (it) { flat.push({ s: si, g: g, it: it }); }); });
+  });
+  secStart.push(flat.length);
+  window.addEventListener('hashchange', route);
+  route();
+}
+function route() {
+  var h = location.hash, m;
+  if ((m = h.match(/^#v(\d+)$/)) && flat[+m[1]]) { if (!M.sections[flat[+m[1]].s].rendered) showSec(flat[+m[1]].s); openV(+m[1]); return; }
+  if (V.classList.contains('open')) closeV(true);
+  var si = (m = h.match(/^#s(\d+)$/)) ? +m[1] : (M.cur || 0);
+  if (si !== M.cur || !M.sections[si].rendered) showSec(si);
+}
+function showSec(si) {
+  if (!M.sections[si]) si = 0;
+  M.cur = si;
+  [].forEach.call($('nav').children, function (b, i) { b.classList.toggle('on', i === si); });
+  var main = $('main'), s = M.sections[si], html = '', idx = secStart[si];
+  M.sections.forEach(function (x) { x.rendered = false; }); s.rendered = true;
+  html += '<div class="bar"><button onclick="slideSec(' + si + ')">▶ 放映本组（全屏）</button></div>';
+  s.groups.forEach(function (g) {
+    html += '<h2>' + g.name + '<span>' + g.items.length + '</span></h2><div class="g">';
+    g.items.forEach(function (it) {
+      var v = it.v[0], ar = s.multi ? 1 : v.w / v.h;
+      html += '<div class="c" style="aspect-ratio:' + ar.toFixed(4) + '" data-i="' + idx + '"><img loading="lazy" decoding="async" src="t/' + v.f.replace(/\.jpg$/, '.webp') + '" alt="">' + (it.n ? '<b>' + it.n + '</b>' : '') + '</div>';
+      idx++;
+    });
+    html += '</div>';
+  });
+  html += '<footer>点开为官方原始 JPG（逐字节未改动），缩略图仅用于列表。键盘：←/→ 切换，空格 放映，F 全屏，Z 1:1，Esc 关闭。图片版权归 Rockstar Games 所有。</footer>';
+  main.innerHTML = html;
+  main.onclick = function (e) { var c = e.target.closest('.c'); if (c) location.hash = 'v' + c.dataset.i; };
+  window.scrollTo(0, 0);
+}
+
+/* ---------- viewer ---------- */
+var cache = {};   // url -> Image, max 3 originals kept (memory safety on phones)
+var view = { s: 1, x: 0, y: 0, nw: 0, nh: 0, base: 1 };
+var hideT, playT = null, playing = false, wake = null, loadTok = 0;
+
+function screenAR() { return innerWidth / innerHeight; }
+function pickVar(it) {
+  if (it.v.length === 1) return it.v[0];
+  if (manualVar && curVar && it.v.indexOf(curVar) >= 0) return curVar;
+  var ar = screenAR(), best = null, bd = 9;
+  it.v.forEach(function (v) { if (v.logo) return; var d = Math.abs(Math.log((v.w / v.h) / ar)); if (d < bd) { bd = d; best = v; } });
+  return best || it.v[0];
+}
+function openV(i) {
+  var first = !V.classList.contains('open');
+  V.classList.add('open'); document.body.style.overflow = 'hidden';
+  if (i !== cur) manualVar = false;
+  cur = i; show(); if (first) poke();
+}
+function closeV(fromRoute) {
+  stopPlay(); V.classList.remove('open'); document.body.style.overflow = '';
+  HI.removeAttribute('src'); LO.removeAttribute('src'); cache = {}; cur = -1;
+  if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  if (!fromRoute) history.replaceState(null, '', '#s' + M.cur), route();
+}
+function src(v) { return 'o/' + v.f; }
+function thumb(v) { return 't/' + v.f.replace(/\.jpg$/, '.webp'); }
+
+function load(url) {
+  if (cache[url]) return cache[url].p;
+  var im = new Image(); im.decoding = 'async';
+  var p = new Promise(function (res, rej) {
+    im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(function () { res(im); }, function () { res(im); }); };
+    im.onerror = rej;
+  });
+  im.src = url; cache[url] = { im: im, p: p, t: Date.now() };
+  return p;
+}
+function trim(keep) {
+  Object.keys(cache).forEach(function (u) { if (keep.indexOf(u) < 0) { cache[u].im.src = ''; delete cache[u]; } });
+}
+function show() {
+  var e = flat[cur], v = curVar = pickVar(e.it), u = src(v), tok = ++loadTok;
+  var g = e.g, gi = g.items.indexOf(e.it);
+  $('tt').textContent = M.sections[e.s].zh + ' · ' + g.name + (e.it.n ? ' · ' + e.it.n : '');
+  $('ct').textContent = (gi + 1) + ' / ' + g.items.length + '　(' + (cur + 1) + '/' + flat.length + ')';
+  $('inf').textContent = v.w + '×' + v.h + ' · ' + mb(v.s);
+  $('bd').href = u; $('bd').setAttribute('download', v.f.split('/').pop());
+  var vs = $('vars'); vs.innerHTML = '';
+  if (e.it.v.length > 1) e.it.v.forEach(function (x) {
+    var b = document.createElement('button'); b.textContent = x.l; if (x === v) b.className = 'on';
+    b.onclick = function (ev) { ev.stopPropagation(); manualVar = true; curVar = x; show(); }; vs.appendChild(b);
+  });
+  view.nw = v.w; view.nh = v.h; resetView();
+  HI.style.visibility = 'hidden';
+  LO.src = thumb(v); LO.style.visibility = 'visible';
+  $('ld').textContent = '原图加载中 · ' + mb(v.s);
+  load(u).then(function () {
+    if (tok !== loadTok) return;
+    HI.src = u; HI.style.visibility = 'visible'; LO.style.visibility = 'hidden';
+    $('ld').textContent = '原图 ' + v.w + '×' + v.h;
+    // preload neighbours (one each side), keep at most 3 originals in memory
+    var n = flat[(cur + 1) % flat.length], p = flat[(cur - 1 + flat.length) % flat.length];
+    var nu = src(pickVar(n.it)), pu = src(pickVar(p.it));
+    trim([u, nu, pu]);
+    load(nu).then(function () { if (tok === loadTok) load(pu); }, function () {});
+    if (playing) schedule();
+  }, function () { if (tok === loadTok) { $('ld').textContent = '原图加载失败，点击重试'; delete cache[u]; $('ld').onclick = show; } });
+  if (location.hash !== '#v' + cur) history.replaceState(null, '', '#v' + cur);
+}
+function go(d) { if (cur < 0) return; manualVar = false; cur = (cur + d + flat.length) % flat.length; show(); }
+
+/* layout: base scale = fit into screen (contain/cover); s = extra zoom */
+function resetView() { view.s = 1; layout(); }
+function layout() {
+  var W = innerWidth, H = innerHeight, nw = view.nw, nh = view.nh;
+  view.base = fit === 'contain' ? Math.min(W / nw, H / nh) : Math.max(W / nw, H / nh);
+  var sc = view.base * view.s, w = nw * sc, h = nh * sc;
+  if (view.s === 1) { view.x = (W - w) / 2; view.y = (H - h) / 2; }
+  else { view.x = clamp(view.x, W - w, 0, W, w); view.y = clamp(view.y, H - h, 0, H, h); }
+  [LO, HI].forEach(function (im) { im.style.width = nw + 'px'; im.style.height = nh + 'px'; im.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + sc + ')'; });
+}
+function clamp(p, min, max, W, w) { if (w <= W) return (W - w) / 2; return Math.min(max, Math.max(min, p)); }
+function zoomAt(newS, cx, cy) {
+  var old = view.base * view.s; newS = Math.max(1, Math.min(newS, 8 / view.base));
+  var ns = view.base * newS;
+  view.x = cx - (cx - view.x) * ns / old; view.y = cy - (cy - view.y) * ns / old; view.s = newS; layout();
+}
+function toggle11(cx, cy) { if (view.s > 1.01) resetView(); else zoomAt(1 / view.base, cx === undefined ? innerWidth / 2 : cx, cy === undefined ? innerHeight / 2 : cy); }
+
+/* pointer: swipe, pan, pinch, double-tap */
+var pts = {}, gest = null, lastTap = 0;
+ST.addEventListener('pointerdown', function (e) {
+  ST.setPointerCapture(e.pointerId); pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+  var ids = Object.keys(pts);
+  if (ids.length === 1) gest = { t: 'one', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, time: Date.now(), moved: false };
+  else if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; gest = { t: 'pinch', d: Math.hypot(a.x - b.x, a.y - b.y), s: view.s }; }
+});
+ST.addEventListener('pointermove', function (e) {
+  if (!pts[e.pointerId] || !gest) return;
+  pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+  if (gest.t === 'one') {
+    var dx = e.clientX - gest.sx, dy = e.clientY - gest.sy;
+    if (Math.abs(dx) + Math.abs(dy) > 8) gest.moved = true;
+    if (view.s > 1.01) { view.x = gest.vx + dx; view.y = gest.vy + dy; layout(); }
+  } else if (gest.t === 'pinch') {
+    var ids = Object.keys(pts); if (ids.length < 2) return;
+    var a = pts[ids[0]], b = pts[ids[1]];
+    zoomAt(gest.s * Math.hypot(a.x - b.x, a.y - b.y) / gest.d, (a.x + b.x) / 2, (a.y + b.y) / 2);
+  }
+});
+function up(e) {
+  if (!pts[e.pointerId]) return; delete pts[e.pointerId];
+  if (!gest) return;
+  if (gest.t === 'one' && Object.keys(pts).length === 0) {
+    var dx = e.clientX - gest.sx, dy = e.clientY - gest.sy, dt = Date.now() - gest.time;
+    if (view.s <= 1.01 && gest.moved && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+    else if (view.s <= 1.01 && gest.moved && dy > 90 && Math.abs(dy) > Math.abs(dx) && !playing) closeV();
+    else if (!gest.moved && dt < 300) {
+      var now = Date.now();
+      if (now - lastTap < 300) { toggle11(e.clientX, e.clientY); lastTap = 0; clearTimeout(gest.tt); }
+      else { lastTap = now; var g = gest; setTimeout(function () { if (lastTap === now) { V.classList.toggle('hide'); } }, 300); }
+    }
+  }
+  gest = Object.keys(pts).length ? { t: 'one', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, time: Date.now(), moved: true } : null;
+}
+ST.addEventListener('pointerup', up); ST.addEventListener('pointercancel', up);
+ST.addEventListener('wheel', function (e) { e.preventDefault(); zoomAt(view.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY); }, { passive: false });
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+/* controls */
+$('bx').onclick = function () { closeV(); };
+$('bp').onclick = function () { go(-1); }; $('bn').onclick = function () { go(1); };
+$('bz').onclick = function () { toggle11(); };
+$('bf').onclick = function () { fit = fit === 'contain' ? 'cover' : 'contain'; this.textContent = fit === 'contain' ? '适应' : '铺满'; resetView(); };
+$('bfs').onclick = fs;
+$('bs').onclick = function () { playing ? stopPlay() : startPlay(); };
+function fs() {
+  var d = document, el = d.documentElement;
+  if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+  else if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else V.classList.add('hide'); // iPhone Safari: no element fullscreen -> hide controls
+}
+function schedule() { clearTimeout(playT); playT = setTimeout(function () { go(1); }, 6000); }
+function startPlay() {
+  playing = true; $('bs').textContent = '❚❚ 暂停'; $('bs').classList.add('on'); V.classList.add('hide'); schedule();
+  if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {});
+}
+function stopPlay() {
+  playing = false; clearTimeout(playT); $('bs').textContent = '▶ 放映'; $('bs').classList.remove('on');
+  if (wake) { wake.release().catch(function () {}); wake = null; }
+}
+window.slideSec = function (si) { location.hash = 'v' + secStart[si]; setTimeout(function () { fs(); startPlay(); }, 50); };
+document.addEventListener('visibilitychange', function () { if (playing && !document.hidden && navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {}); });
+document.addEventListener('keydown', function (e) {
+  if (cur < 0) return;
+  var k = e.key;
+  if (k === 'ArrowRight' || k === 'PageDown') go(1);
+  else if (k === 'ArrowLeft' || k === 'PageUp') go(-1);
+  else if (k === ' ') { e.preventDefault(); playing ? stopPlay() : startPlay(); }
+  else if (k === 'f' || k === 'F') fs();
+  else if (k === 'z' || k === 'Z') toggle11();
+  else if (k === 'h' || k === 'H') V.classList.toggle('hide');
+  else if (k === 'Escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) closeV();
+});
+function poke() { clearTimeout(hideT); hideT = setTimeout(function () { if (cur >= 0 && !matchMedia('(hover:none)').matches) V.classList.add('hide'); }, 3000); }
+V.addEventListener('mousemove', function () { if (!playing) { V.classList.remove('hide'); poke(); } });
+/* rotation / window resize / external display: refit and re-pick the best wallpaper variant */
+var rz; window.addEventListener('resize', function () {
+  clearTimeout(rz); rz = setTimeout(function () {
+    if (cur < 0) return;
+    var it = flat[cur].it;
+    if (it.v.length > 1 && !manualVar && pickVar(it) !== curVar) show(); else layout();
+  }, 150);
+});
+</script>
+</body>
+</html>
