@@ -51,7 +51,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
 </style>
 </head>
 <body>
-<header><h1>GTA VI 官方媒体原图</h1><p id="sum">加载中…</p></header>
+<header><h1>GTA VI 官方媒体原图</h1><p id="sum">加载中…</p><div class="bar" style="padding-left:0"><button id="pa">▶ 播放全部</button><button id="om">顺序</button><span style="color:#777;font-size:12px;align-self:center">每张 10 秒，循环</span></div></header>
 <nav id="nav"></nav>
 <main id="main"></main>
 
@@ -60,7 +60,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
   <div class="ui top"><button id="bx">✕</button><span class="t" id="tt"></span><span class="sp"></span><span id="ct"></span></div>
   <div class="ui bot">
     <button id="bp">‹</button><button id="bn">›</button>
-    <button id="bs">▶ 放映</button><button id="bf">适应</button><button id="bz">1:1</button><button id="bfs">全屏</button>
+    <button id="bs">▶ 放映</button><button id="bo">顺序</button><button id="bf">适应</button><button id="bz">1:1</button><button id="bfs">全屏</button>
     <a id="bd" download><button>原图</button></a>
     <span class="vars" id="vars"></span><span class="sp"></span><span id="inf"></span>
   </div>
@@ -122,7 +122,18 @@ function showSec(si) {
 /* ---------- viewer ---------- */
 var cache = {};   // url -> Image, max 3 originals kept (memory safety on phones)
 var view = { s: 1, x: 0, y: 0, nw: 0, nh: 0, base: 1 };
-var hideT, playT = null, playing = false, wake = null, loadTok = 0;
+var hideT, playT = null, playing = false, wake = null, loadTok = 0, planNext = 0, deck = [];
+var order = 'seq'; try { if (localStorage.getItem('gta6order') === 'rnd') order = 'rnd'; } catch (e) {}
+function setOrder(o) { order = o; deck = []; try { localStorage.setItem('gta6order', o); } catch (e) {}
+  ['om', 'bo'].forEach(function (id) { var b = $(id); b.textContent = o === 'rnd' ? '随机' : '顺序'; b.classList.toggle('on', o === 'rnd'); });
+  if (cur >= 0) plan(); }
+function plan() {
+  if (order === 'rnd' && flat.length > 1) {
+    if (!deck.length) { for (var i = 0; i < flat.length; i++) if (i !== cur) deck.push(i);
+      for (var j = deck.length - 1; j > 0; j--) { var k = Math.floor(Math.random() * (j + 1)), t = deck[j]; deck[j] = deck[k]; deck[k] = t; } }
+    planNext = deck[deck.length - 1];
+  } else planNext = (cur + 1) % flat.length;
+}
 
 function screenAR() { return innerWidth / innerHeight; }
 function pickVar(it) {
@@ -162,6 +173,7 @@ function trim(keep) {
 }
 function show() {
   var e = flat[cur], v = curVar = pickVar(e.it), u = src(v), tok = ++loadTok;
+  plan();
   var g = e.g, gi = g.items.indexOf(e.it);
   $('tt').textContent = M.sections[e.s].zh + ' · ' + g.name + (e.it.n ? ' · ' + e.it.n : '');
   $('ct').textContent = (gi + 1) + ' / ' + g.items.length + '　(' + (cur + 1) + '/' + flat.length + ')';
@@ -181,7 +193,7 @@ function show() {
     HI.src = u; HI.style.visibility = 'visible'; LO.style.visibility = 'hidden';
     $('ld').textContent = '原图 ' + v.w + '×' + v.h;
     // preload neighbours (one each side), keep at most 3 originals in memory
-    var n = flat[(cur + 1) % flat.length], p = flat[(cur - 1 + flat.length) % flat.length];
+    var n = flat[planNext], p = flat[(cur - 1 + flat.length) % flat.length];
     var nu = src(pickVar(n.it)), pu = src(pickVar(p.it));
     trim([u, nu, pu]);
     load(nu).then(function () { if (tok === loadTok) load(pu); }, function () {});
@@ -189,7 +201,9 @@ function show() {
   }, function () { if (tok === loadTok) { $('ld').textContent = '原图加载失败，点击重试'; delete cache[u]; $('ld').onclick = show; } });
   if (location.hash !== '#v' + cur) history.replaceState(null, '', '#v' + cur);
 }
-function go(d) { if (cur < 0) return; manualVar = false; cur = (cur + d + flat.length) % flat.length; show(); }
+function go(d) { if (cur < 0) return; manualVar = false;
+  if (d === 1 && order === 'rnd') { if (deck.length && deck[deck.length - 1] === planNext) deck.pop(); cur = planNext; }
+  else cur = (cur + d + flat.length) % flat.length; show(); }
 
 /* layout: base scale = fit into screen (contain/cover); s = extra zoom */
 function resetView() { view.s = 1; layout(); }
@@ -256,6 +270,9 @@ $('bz').onclick = function () { toggle11(); };
 $('bf').onclick = function () { fit = fit === 'contain' ? 'cover' : 'contain'; this.textContent = fit === 'contain' ? '适应' : '铺满'; resetView(); };
 $('bfs').onclick = fs;
 $('bs').onclick = function () { playing ? stopPlay() : startPlay(); };
+$('bo').onclick = $('om').onclick = function () { setOrder(order === 'rnd' ? 'seq' : 'rnd'); };
+setOrder(order);
+$('pa').onclick = function () { var i = order === 'rnd' ? Math.floor(Math.random() * flat.length) : 0; deck = []; location.hash = 'v' + i; setTimeout(function () { fs(); startPlay(); }, 50); };
 function fs() {
   var d = document, el = d.documentElement;
   if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
@@ -263,7 +280,7 @@ function fs() {
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   else V.classList.add('hide'); // iPhone Safari: no element fullscreen -> hide controls
 }
-function schedule() { clearTimeout(playT); playT = setTimeout(function () { go(1); }, 6000); }
+function schedule() { clearTimeout(playT); playT = setTimeout(function () { go(1); }, 10000); }
 function startPlay() {
   playing = true; $('bs').textContent = '❚❚ 暂停'; $('bs').classList.add('on'); V.classList.add('hide'); schedule();
   if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {});
