@@ -11,58 +11,135 @@
 <title>GTA VI 官方媒体原图</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#000;color:#ddd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
-a{color:inherit}
-header{padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left))}
-header h1{font-size:17px;color:#fff}
-header p{font-size:12px;color:#888}
-nav{position:sticky;top:0;z-index:2;background:#000;border-bottom:1px solid #222;display:flex;overflow-x:auto;padding:0 env(safe-area-inset-right) 0 env(safe-area-inset-left);scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-nav button{flex:none;background:none;border:0;color:#999;font:inherit;padding:10px 12px;cursor:pointer}
-nav button.on{color:#fff;box-shadow:inset 0 -2px #fff}
-main{padding:0 calc(8px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left))}
-h2{font-size:14px;color:#fff;margin:16px 4px 6px;font-weight:600}
-h2 span{color:#777;font-weight:400;margin-left:6px}
-.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px}
-@media(max-width:480px){.g{grid-template-columns:repeat(2,1fr)}}
-.c{position:relative;background:#111;cursor:pointer;overflow:hidden;content-visibility:auto;contain-intrinsic-size:160px 120px}
-.c img{display:block;width:100%;height:100%;object-fit:cover}
-.c b{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:11px;font-weight:400;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75))}
-.bar{display:flex;gap:8px;padding:8px 4px 0}
-.bar button,.v button{background:#1a1a1a;color:#ddd;border:1px solid #333;border-radius:6px;font:inherit;font-size:13px;padding:6px 10px;cursor:pointer}
-footer{color:#666;font-size:11px;padding:24px 4px 0}
+:root{--bg:#0b0b0d;--fg:#f2f0ec;--mute:#8d8a85;--line:rgba(255,255,255,.09);--pink:#ff5ca8;--gut:max(16px,env(safe-area-inset-left));--gutr:max(16px,env(safe-area-inset-right))}
+html,body{background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lat{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif}
+/* hero */
+.hero{position:relative;height:min(78vh,760px);min-height:460px;overflow:hidden;background:#000}
+.hero picture,.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,13,.35) 0,rgba(11,11,13,0) 28%,rgba(11,11,13,.25) 55%,var(--bg) 100%)}
+.hero .in{position:absolute;z-index:1;left:var(--gut);right:var(--gutr);bottom:28px;max-width:1240px;margin:0 auto}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.hero h1{font-size:clamp(56px,13vw,132px);line-height:.88;font-weight:900;letter-spacing:-.035em;margin:10px 0 12px;text-shadow:0 2px 30px rgba(0,0,0,.35)}
+.hero h1 em{font-style:normal;color:var(--pink)}
+.hero .sub{font-size:clamp(17px,2.6vw,22px);font-weight:600;letter-spacing:.02em}
+.stats{display:flex;gap:22px;margin:16px 0 20px;flex-wrap:wrap}
+.stats div{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:.06em}
+.stats b{display:block;font-size:22px;line-height:1.1;color:#fff;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.cta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:22px;border:0;font-size:15px;font-weight:600}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.btn.pri{background:#fff;color:#000}
+.btn.sec{background:rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.btn.sec.on{background:var(--pink);color:#fff}
+.cta small{font-size:12px;color:rgba(255,255,255,.6)}
+/* nav */
+nav{position:sticky;top:0;z-index:3;background:rgba(11,11,13,.86);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+nav .in{display:flex;gap:6px;overflow-x:auto;padding:10px var(--gutr) 10px var(--gut);scrollbar-width:none;max-width:1272px;margin:0 auto}
+nav .in::-webkit-scrollbar{display:none}
+nav button{flex:none;border:0;background:transparent;color:var(--mute);height:34px;padding:0 14px;border-radius:17px;font-size:14px;font-weight:600;white-space:nowrap}
+nav button i{font-style:normal;font-weight:500;font-size:11px;margin-left:5px;opacity:.6;font-variant-numeric:tabular-nums}
+nav button.on{background:var(--fg);color:#000}
+/* content */
+main{max-width:1272px;margin:0 auto;padding:0 var(--gutr) calc(40px + env(safe-area-inset-bottom)) var(--gut)}
+.sh{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:36px 0 8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.sh .no{font-size:13px;font-weight:700;color:var(--pink);letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.sh h2{font-size:clamp(28px,5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.01em;margin-top:4px}
+.sh .en{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-top:6px}
+.sh .meta{text-align:right;font-size:12px;color:var(--mute);line-height:1.6;flex:none;font-variant-numeric:tabular-nums}
+.sh .meta button{margin-top:8px;height:34px;padding:0 14px;font-size:13px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.06)}
+.gs{display:grid;grid-template-columns:repeat(2,1fr);column-gap:6px;grid-auto-flow:dense}
+.grp{padding-top:22px;min-width:0;grid-column:1/-1}
+.grp.k1{grid-column:span 1}
+.k1 .g{grid-template-columns:1fr}
+@media(min-width:640px){.gs{grid-template-columns:repeat(3,1fr);column-gap:8px}.grp.k2{grid-column:span 2}.k2 .g{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.gs{grid-template-columns:repeat(4,1fr)}.grp.k3{grid-column:span 3}.k3 .g{grid-template-columns:repeat(3,1fr)}}
+.gh{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.gh h3{font-size:16px;font-weight:700;letter-spacing:.01em}
+.gh span{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.gh:after{content:"";flex:1;height:1px;background:var(--line);align-self:center}
+.g{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;grid-auto-flow:dense}
+@media(min-width:640px){.g{grid-template-columns:repeat(3,1fr);gap:8px}}
+@media(min-width:1000px){.g{grid-template-columns:repeat(4,1fr)}}
+.c{position:relative;background:#16161a;cursor:pointer;overflow:hidden;border-radius:6px;aspect-ratio:16/9;content-visibility:auto;contain-intrinsic-size:auto 120px}
+.c.f{grid-column:span 2;grid-row:span 2}
+@media(max-width:639px){.c.l{grid-column:span 2}}
+.c.art{aspect-ratio:4/5}
+.c.art.f{aspect-ratio:auto}
+@media(max-width:639px){.c.art.l{aspect-ratio:8/5}}
+.c img{display:block;width:100%;height:100%;object-fit:cover;transition:opacity .3s}
+@media(hover:hover){.c img{transition:transform .5s,opacity .3s}.c:hover img{transform:scale(1.03)}}
+.c b{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 8px;font-size:12px;font-weight:600;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.c b i{display:block;font-style:normal;font-weight:400;font-size:10px;opacity:.7;margin-top:1px}
+footer{max-width:1272px;margin:0 auto;padding:28px var(--gutr) calc(36px + env(safe-area-inset-bottom)) var(--gut);border-top:1px solid var(--line);color:var(--mute);font-size:12px;line-height:1.8}
+footer kbd{font:inherit;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--fg)}
 /* viewer */
 .v{position:fixed;inset:0;z-index:9;background:#000;display:none;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
 .v.open{display:block}
 .st{position:absolute;inset:0;overflow:hidden}
-.st img{position:absolute;left:0;top:0;max-width:none;max-height:none;-webkit-user-drag:none;image-rendering:auto}
-#lo{filter:none}
-.ui{position:absolute;left:0;right:0;display:flex;gap:6px;align-items:center;padding:8px calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));background:rgba(0,0,0,.55);font-size:12px;flex-wrap:wrap}
-.top{top:0;padding-top:calc(8px + env(safe-area-inset-top))}
-.bot{bottom:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-.ui .sp{flex:1}
-.ui .t{color:#fff;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.v.hide .ui{display:none}
-.v button.on{background:#fff;color:#000}
-#ld{position:absolute;right:calc(10px + env(safe-area-inset-right));top:calc(48px + env(safe-area-inset-top));font-size:11px;color:#aaa;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:4px}
-.v.hide #ld{display:none}
-.vars{display:flex;gap:4px;flex-wrap:wrap}
-.vars button{padding:3px 7px;font-size:11px}
+.st img{position:absolute;left:0;top:0;max-width:none;max-height:none;-webkit-user-drag:none}
+.ui{position:absolute;left:0;right:0;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));transition:opacity .2s}
+.top{top:0;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:28px;display:flex;align-items:center;gap:12px;background:linear-gradient(rgba(0,0,0,.7),transparent)}
+.bot{bottom:0;padding-top:36px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.v.hide .ui,.v.hide #ld{opacity:0;pointer-events:none}
+.ttl{flex:1;min-width:0;line-height:1.3}
+.ttl b{display:block;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl span{font-size:11px;color:rgba(255,255,255,.65);letter-spacing:.04em}
+#ct{font-size:12px;color:rgba(255,255,255,.75);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.ib{width:40px;height:40px;border-radius:20px;border:0;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib.big{width:56px;height:56px;border-radius:28px;background:#fff;color:#000}
+.ib.big svg{width:22px;height:22px;fill:currentColor;stroke:none}
+.trans{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:12px}
+.tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.chip{height:30px;padding:0 12px;border-radius:15px;border:0;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;font-size:12px;font-weight:600;display:inline-flex;align-items:center}
+.chip.on{background:#fff;color:#000}
+.sep{width:1px;height:16px;background:rgba(255,255,255,.2);margin:0 4px}
+#inf{display:block;text-align:center;font-size:11px;color:rgba(255,255,255,.55);margin-top:10px;font-variant-numeric:tabular-nums;letter-spacing:.03em}
+.vars{display:contents}
+.vars .chip{height:26px;font-size:11px;padding:0 9px}
+#ld{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));font-size:11px;color:#fff;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:4px 10px;border-radius:11px;white-space:nowrap;transition:opacity .2s}
+@media(min-width:900px){.bot{display:flex;align-items:center;justify-content:space-between;gap:16px}.trans{margin:0;order:2}.tools{order:1;justify-content:flex-start;flex:1}#inf{order:3;flex:1;text-align:right;margin:0}}
 </style>
 </head>
 <body>
-<header><h1>GTA VI 官方媒体原图</h1><p id="sum">加载中…</p><div class="bar" style="padding-left:0"><button id="pa">▶ 播放全部</button><button id="om">顺序</button><span style="color:#777;font-size:12px;align-self:center">每张 10 秒，循环</span></div></header>
-<nav id="nav"></nav>
+<section class="hero">
+  <picture><source media="(max-aspect-ratio:3/4)" srcset="hero-m.webp"><img src="hero.webp" alt="" fetchpriority="high"></picture>
+  <div class="in">
+    <div class="eyebrow">Official Media · Rockstar Games</div>
+    <h1 class="lat">GTA <em>VI</em></h1>
+    <div class="sub">官方媒体原图库</div>
+    <div class="stats" id="sum"></div>
+    <div class="cta">
+      <button class="btn pri" id="pa"><svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>播放全部</button>
+      <button class="btn sec" id="om">顺序</button>
+      <small>每张 10 秒 · 循环</small>
+    </div>
+  </div>
+</section>
+<nav><div class="in" id="nav"></div></nav>
 <main id="main"></main>
+<footer>点开即为官方原始 JPG，逐字节未改动；列表中的缩略图仅供浏览。<br>键盘 <kbd>←</kbd> <kbd>→</kbd> 切换 · <kbd>空格</kbd> 放映 · <kbd>F</kbd> 全屏 · <kbd>Z</kbd> 1:1 · <kbd>Esc</kbd> 关闭<br>图片版权归 Rockstar Games 所有 · 来源 rockstargames.com/VI/media</footer>
 
 <div class="v" id="v">
   <div class="st" id="st"><img id="lo" alt=""><img id="hi" alt=""></div>
-  <div class="ui top"><button id="bx">✕</button><span class="t" id="tt"></span><span class="sp"></span><span id="ct"></span></div>
+  <div class="ui top">
+    <button class="ib" id="bx" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="ttl" id="tt"></div><div id="ct"></div>
+  </div>
   <div class="ui bot">
-    <button id="bp">‹</button><button id="bn">›</button>
-    <button id="bs">▶ 放映</button><button id="bo">顺序</button><button id="bf">自动</button><button id="bz">1:1</button><button id="bfs">全屏</button>
-    <a id="bd" download><button>原图</button></a>
-    <span class="vars" id="vars"></span><span class="sp"></span><span id="inf"></span>
+    <div class="trans">
+      <button class="ib" id="bp" aria-label="上一张"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="ib big" id="bs" aria-label="放映"></button>
+      <button class="ib" id="bn" aria-label="下一张"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="tools">
+      <button class="chip" id="bo">顺序</button><button class="chip" id="bf">自动</button><button class="chip" id="bz">1:1</button><button class="chip" id="bfs">全屏</button><a id="bd" download class="chip">下载原图</a>
+      <span class="vars" id="vars"></span>
+    </div>
+    <span id="inf"></span>
   </div>
   <div id="ld"></div>
 </div>
@@ -70,6 +147,7 @@ footer{color:#666;font-size:11px;padding:24px 4px 0}
 <script>
 'use strict';
 var M, flat = [], secStart = [], cur = -1, curVar = null, manualVar = false, fit = 'auto';
+var PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>', PAUSE = '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
 var $ = function (id) { return document.getElementById(id); };
 var V = $('v'), ST = $('st'), LO = $('lo'), HI = $('hi');
 function mb(b) { return (b / 1048576).toFixed(1) + ' MB'; }
@@ -78,10 +156,11 @@ fetch('manifest.json').then(function (r) { return r.json(); }).then(init).catch(
 
 function init(m) {
   M = m;
-  $('sum').textContent = m.count + ' 个原始文件 · ' + (m.bytes / 1073741824).toFixed(2) + ' GB · 全部来自 rockstargames.com/VI/media 官方下载包，未做任何压缩';
+  var nItems = 0; m.sections.forEach(function (s) { s.groups.forEach(function (g) { nItems += g.items.length; }); });
+  $('sum').innerHTML = '<div><b>' + nItems + '</b>作品</div><div><b>' + m.count + '</b>原始文件</div><div><b>' + (m.bytes / 1073741824).toFixed(2) + ' GB</b>零压缩</div><div><b>4K</b>最高 5120 px</div>';
   var nav = $('nav'), main = $('main');
   m.sections.forEach(function (s, si) {
-    var b = document.createElement('button'); b.textContent = s.zh; b.onclick = function () { location.hash = 's' + si; showSec(si); };
+    var b = document.createElement('button'), n = 0; s.groups.forEach(function (g) { n += g.items.length; }); s.n = n; b.innerHTML = s.zh + '<i>' + n + '</i>'; b.onclick = function () { location.hash = 's' + si; showSec(si); };
     nav.appendChild(b);
     secStart.push(flat.length);
     s.groups.forEach(function (g) { g.items.forEach(function (it) { flat.push({ s: si, g: g, it: it }); }); });
@@ -103,20 +182,28 @@ function showSec(si) {
   [].forEach.call($('nav').children, function (b, i) { b.classList.toggle('on', i === si); });
   var main = $('main'), s = M.sections[si], html = '', idx = secStart[si];
   M.sections.forEach(function (x) { x.rendered = false; }); s.rendered = true;
-  html += '<div class="bar"><button onclick="slideSec(' + si + ')">▶ 放映本组（全屏）</button></div>';
+  var bytes = 0; s.groups.forEach(function (g) { g.items.forEach(function (it) { it.v.forEach(function (v) { bytes += v.s; }); }); });
+  html += '<div class="sh"><div><div class="no">' + ('0' + (si + 1)).slice(-2) + ' / ' + ('0' + M.sections.length).slice(-2) + '</div><h2>' + s.zh + '</h2><div class="en">' + s.en + '</div></div>'
+    + '<div class="meta">' + s.groups.length + ' 组 · ' + s.n + ' 张<br>' + mb(bytes) + '<br><button onclick="slideSec(' + si + ')">▶ 放映本区</button></div></div>';
+  html += '<div class="gs">';
   s.groups.forEach(function (g) {
-    html += '<h2>' + g.name + '<span>' + g.items.length + '</span></h2><div class="g">';
-    g.items.forEach(function (it) {
-      var v = it.v[0], ar = s.multi ? 1 : v.w / v.h;
-      html += '<div class="c" style="aspect-ratio:' + ar.toFixed(4) + '" data-i="' + idx + '"><img loading="lazy" decoding="async" src="t/' + v.f.replace(/\.jpg$/, '.webp') + '" alt="">' + (it.n ? '<b>' + it.n + '</b>' : '') + '</div>';
+    html += '<div class="grp' + (g.items.length < 4 ? ' k' + g.items.length : '') + '"><div class="gh"><h3 class="lat">' + g.name + '</h3><span>' + g.items.length + '</span></div><div class="g">';
+    var n = g.items.length, nf = (n >= 5 ? 1 : 0) + (n >= 12 ? Math.floor((n - 1) / 9) : 0);
+    g.items.forEach(function (it, k) {
+      var v = it.v[0], feat = n >= 5 && k === 0 || (n >= 12 && k % 9 === 0);
+      if (!feat && k === n - 1 && (n - nf) % 2) feat = 'l';
+      if (s.multi) { var p = null; it.v.forEach(function (x) { if (!p && x.k === 'portrait') p = x; }); if (feat) p = null; v = p || it.v[0]; }
+      var cls = 'c' + (s.multi ? ' art' : '') + (feat === 'l' ? ' l' : feat ? ' f' : '');
+      html += '<div class="' + cls + '" data-i="' + idx + '"><img loading="lazy" decoding="async" src="' + thumb(v) + '" alt="">'
+        + (it.n ? '<b>' + it.n + (it.v.length > 1 ? '<i>' + it.v.length + ' 种尺寸</i>' : '') + '</b>' : '') + '</div>';
       idx++;
     });
-    html += '</div>';
+    html += '</div></div>';
   });
-  html += '<footer>点开为官方原始 JPG（逐字节未改动），缩略图仅用于列表。键盘：←/→ 切换，空格 放映，F 全屏，Z 1:1，Esc 关闭。图片版权归 Rockstar Games 所有。</footer>';
+  html += '</div>';
   main.innerHTML = html;
   main.onclick = function (e) { var c = e.target.closest('.c'); if (c) location.hash = 'v' + c.dataset.i; };
-  window.scrollTo(0, 0);
+  var top = document.querySelector('.hero').offsetHeight; if (scrollY > top) window.scrollTo(0, top);
 }
 
 /* ---------- viewer ---------- */
@@ -171,13 +258,13 @@ function show() {
   var e = flat[cur], v = curVar = pickVar(e.it), u = src(v), tok = ++loadTok;
   plan();
   var g = e.g, gi = g.items.indexOf(e.it);
-  $('tt').textContent = M.sections[e.s].zh + ' · ' + g.name + (e.it.n ? ' · ' + e.it.n : '');
-  $('ct').textContent = (gi + 1) + ' / ' + g.items.length + '　(' + (cur + 1) + '/' + flat.length + ')';
-  $('inf').textContent = v.w + '×' + v.h + ' · ' + mb(v.s);
+  $('tt').innerHTML = '<b class="lat">' + (e.it.n || g.name) + '</b><span>' + M.sections[e.s].zh + (e.it.n ? ' · ' + g.name : '') + '</span>';
+  $('ct').innerHTML = (gi + 1) + ' / ' + g.items.length + '<br><span style="opacity:.6">总 ' + (cur + 1) + ' / ' + flat.length + '</span>';
+  $('inf').textContent = v.w + ' × ' + v.h + '  ·  ' + mb(v.s) + '  ·  原始 JPG';
   $('bd').href = u; $('bd').setAttribute('download', v.f.split('/').pop());
   var vs = $('vars'); vs.innerHTML = '';
   if (e.it.v.length > 1) e.it.v.forEach(function (x) {
-    var b = document.createElement('button'); b.textContent = x.l; if (x === v) b.className = 'on';
+    var b = document.createElement('button'); b.textContent = x.l; b.className = 'chip' + (x === v ? ' on' : '');
     b.onclick = function (ev) { ev.stopPropagation(); manualVar = true; curVar = x; show(); }; vs.appendChild(b);
   });
   view.nw = v.w; view.nh = v.h; resetView();
@@ -275,7 +362,7 @@ $('bf').onclick = function () { fit = fit === 'auto' ? 'contain' : fit === 'cont
 $('bfs').onclick = fs;
 $('bs').onclick = function () { playing ? stopPlay() : startPlay(); };
 $('bo').onclick = $('om').onclick = function () { setOrder(order === 'rnd' ? 'seq' : 'rnd'); };
-setOrder(order);
+setOrder(order); $('bs').innerHTML = PLAY;
 $('pa').onclick = function () { var i = order === 'rnd' ? Math.floor(Math.random() * flat.length) : 0; deck = []; location.hash = 'v' + i; setTimeout(function () { fs(); startPlay(); }, 50); };
 function fs() {
   var d = document, el = d.documentElement;
@@ -294,11 +381,11 @@ function schedule() {
   }, 10000);
 }
 function startPlay() {
-  playing = true; $('bs').textContent = '❚❚ 暂停'; $('bs').classList.add('on'); V.classList.add('hide'); schedule();
+  playing = true; $('bs').innerHTML = PAUSE; V.classList.add('hide'); schedule();
   if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {});
 }
 function stopPlay() {
-  playing = false; clearTimeout(playT); $('bs').textContent = '▶ 放映'; $('bs').classList.remove('on');
+  playing = false; clearTimeout(playT); $('bs').innerHTML = PLAY;
   if (wake) { wake.release().catch(function () {}); wake = null; }
 }
 window.slideSec = function (si) { location.hash = 'v' + secStart[si]; setTimeout(function () { fs(); startPlay(); }, 50); };
