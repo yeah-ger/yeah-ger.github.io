@@ -49,6 +49,9 @@ main{max-width:1272px;margin:0 auto;padding:0 var(--gutr) calc(40px + env(safe-a
 .sh h2{font-size:clamp(28px,5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.01em;margin-top:4px}
 .sh .en{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-top:6px}
 .sh .meta{text-align:right;font-size:12px;color:var(--mute);line-height:1.6;flex:none;font-variant-numeric:tabular-nums}
+.sh .sb{display:flex;gap:6px;justify-content:flex-end}
+.sh .sl{display:block;font-size:11px;margin-top:4px;opacity:.75}
+.sh .meta button.on{background:var(--pink);border-color:var(--pink);color:#fff}
 .sh .meta button{margin-top:8px;height:34px;padding:0 14px;font-size:13px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.06)}
 .gs{display:grid;grid-template-columns:repeat(2,1fr);column-gap:6px;grid-auto-flow:dense}
 .grp{padding-top:22px;min-width:0;grid-column:1/-1}
@@ -115,7 +118,7 @@ footer kbd{font:inherit;font-size:11px;border:1px solid var(--line);border-radiu
     <div class="cta">
       <button class="btn pri" id="pa"><svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>播放全部</button>
       <button class="btn sec" id="om">顺序</button>
-      <small>每张 10 秒 · 循环</small>
+      <small>每张 10 秒 · 全部内循环</small>
     </div>
   </div>
 </section>
@@ -136,7 +139,7 @@ footer kbd{font:inherit;font-size:11px;border:1px solid var(--line);border-radiu
       <button class="ib" id="bn" aria-label="下一张"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
     <div class="tools">
-      <button class="chip" id="bo">顺序</button><button class="chip" id="bf">自动</button><button class="chip" id="bz">1:1</button><button class="chip" id="bfs">全屏</button><a id="bd" download class="chip">下载原图</a>
+      <button class="chip" id="bsc">全部循环</button><button class="chip" id="bo">顺序</button><button class="chip" id="bf">自动</button><button class="chip" id="bz">1:1</button><button class="chip" id="bfs">全屏</button><a id="bd" download class="chip">下载原图</a>
       <span class="vars" id="vars"></span>
     </div>
     <span id="inf"></span>
@@ -184,7 +187,7 @@ function showSec(si) {
   M.sections.forEach(function (x) { x.rendered = false; }); s.rendered = true;
   var bytes = 0; s.groups.forEach(function (g) { g.items.forEach(function (it) { it.v.forEach(function (v) { bytes += v.s; }); }); });
   html += '<div class="sh"><div><div class="no">' + ('0' + (si + 1)).slice(-2) + ' / ' + ('0' + M.sections.length).slice(-2) + '</div><h2>' + s.zh + '</h2><div class="en">' + s.en + '</div></div>'
-    + '<div class="meta">' + s.groups.length + ' 组 · ' + s.n + ' 张<br>' + mb(bytes) + '<br><button onclick="slideSec(' + si + ')">▶ 放映本区</button></div></div>';
+    + '<div class="meta">' + s.groups.length + ' 组 · ' + s.n + ' 张<br>' + mb(bytes) + '<div class="sb"><button onclick="slideSec(' + si + ')">▶ 放映本区</button><button class="os" onclick="togSec()"></button></div><small class="sl">本区内循环</small></div></div>';
   html += '<div class="gs">';
   s.groups.forEach(function (g) {
     html += '<div class="grp' + (g.items.length < 4 ? ' k' + g.items.length : '') + '"><div class="gh"><h3 class="lat">' + g.name + '</h3><span>' + g.items.length + '</span></div><div class="g">';
@@ -202,6 +205,7 @@ function showSec(si) {
   });
   html += '</div>';
   main.innerHTML = html;
+  syncUI();
   main.onclick = function (e) { var c = e.target.closest('.c'); if (c) location.hash = 'v' + c.dataset.i; };
   var top = document.querySelector('.hero').offsetHeight; if (scrollY > top) window.scrollTo(0, top);
 }
@@ -210,16 +214,27 @@ function showSec(si) {
 var cache = {};   // url -> Image, max 3 originals kept (memory safety on phones)
 var view = { s: 1, x: 0, y: 0, nw: 0, nh: 0, base: 1 };
 var hideT, playT = null, playing = false, wake = null, loadTok = 0, planNext = 0, deck = [];
-var order = 'seq'; try { if (localStorage.getItem('gta6order') === 'rnd') order = 'rnd'; } catch (e) {}
-function setOrder(o) { order = o; deck = []; try { localStorage.setItem('gta6order', o); } catch (e) {}
-  ['om', 'bo'].forEach(function (id) { var b = $(id); b.textContent = o === 'rnd' ? '随机' : '顺序'; b.classList.toggle('on', o === 'rnd'); });
-  if (cur >= 0) plan(); }
+// two independent playback settings: 'all' = loop all sections, 'sec' = loop only the current image's section
+var orders = { all: 'seq', sec: 'seq' }, scope = 'all';
+try { if (localStorage.getItem('gta6order') === 'rnd') orders.all = 'rnd'; if (localStorage.getItem('gta6orderSec') === 'rnd') orders.sec = 'rnd'; if (localStorage.getItem('gta6scope') === 'sec') scope = 'sec'; } catch (e) {}
+function lbl(o) { return o === 'rnd' ? '随机' : '顺序'; }
+function syncUI() {
+  var b = $('om'); b.textContent = lbl(orders.all); b.classList.toggle('on', orders.all === 'rnd');
+  [].forEach.call(document.querySelectorAll('.os'), function (x) { x.textContent = lbl(orders.sec); x.classList.toggle('on', orders.sec === 'rnd'); });
+  b = $('bo'); b.textContent = lbl(orders[scope]); b.classList.toggle('on', orders[scope] === 'rnd');
+  b = $('bsc'); b.textContent = scope === 'sec' ? '本区循环' : '全部循环';
+}
+function setOrder(which, o) { orders[which] = o; deck = []; try { localStorage.setItem(which === 'sec' ? 'gta6orderSec' : 'gta6order', o); } catch (e) {} syncUI(); if (cur >= 0) plan(); }
+function setScope(sc) { scope = sc; deck = []; try { localStorage.setItem('gta6scope', sc); } catch (e) {} syncUI(); if (cur >= 0) { plan(); show(); } }
+function range() { if (scope === 'sec' && cur >= 0) { var si = flat[cur].s; return [secStart[si], secStart[si + 1]]; } return [0, flat.length]; }
 function plan() {
-  if (order === 'rnd' && flat.length > 1) {
-    if (!deck.length) { for (var i = 0; i < flat.length; i++) if (i !== cur) deck.push(i);
+  var r = range(), n = r[1] - r[0];
+  if (orders[scope] === 'rnd' && n > 1) {
+    deck = deck.filter(function (i) { return i >= r[0] && i < r[1] && i !== cur; });
+    if (!deck.length) { for (var i = r[0]; i < r[1]; i++) if (i !== cur) deck.push(i);
       for (var j = deck.length - 1; j > 0; j--) { var k = Math.floor(Math.random() * (j + 1)), t = deck[j]; deck[j] = deck[k]; deck[k] = t; } }
     planNext = deck[deck.length - 1];
-  } else planNext = (cur + 1) % flat.length;
+  } else planNext = r[0] + (cur - r[0] + 1) % n;
 }
 
 function screenAR() { return innerWidth / innerHeight; }
@@ -290,8 +305,9 @@ function show() {
   if (location.hash !== '#v' + cur) history.replaceState(null, '', '#v' + cur);
 }
 function go(d) { if (cur < 0) return; manualVar = false;
-  if (d === 1 && order === 'rnd') { if (deck.length && deck[deck.length - 1] === planNext) deck.pop(); cur = planNext; }
-  else cur = (cur + d + flat.length) % flat.length; show(); }
+  var r = range(), n = r[1] - r[0];
+  if (d === 1 && orders[scope] === 'rnd') { if (deck.length && deck[deck.length - 1] === planNext) deck.pop(); cur = planNext; }
+  else cur = r[0] + (cur - r[0] + d + n) % n; show(); }
 
 /* layout: base scale = fit into screen (contain/cover); s = extra zoom */
 function resetView() { view.s = 1; layout(); }
@@ -361,9 +377,15 @@ $('bz').onclick = function () { toggle11(); };
 $('bf').onclick = function () { fit = fit === 'auto' ? 'contain' : fit === 'contain' ? 'cover' : 'auto'; this.textContent = { auto: '自动', contain: '完整', cover: '铺满' }[fit]; resetView(); };
 $('bfs').onclick = fs;
 $('bs').onclick = function () { playing ? stopPlay() : startPlay(); };
-$('bo').onclick = $('om').onclick = function () { setOrder(order === 'rnd' ? 'seq' : 'rnd'); };
-setOrder(order); $('bs').innerHTML = PLAY;
-$('pa').onclick = function () { var i = order === 'rnd' ? Math.floor(Math.random() * flat.length) : 0; deck = []; location.hash = 'v' + i; setTimeout(function () { fs(); startPlay(); }, 50); };
+$('om').onclick = function () { setOrder('all', orders.all === 'rnd' ? 'seq' : 'rnd'); };
+$('bo').onclick = function () { setOrder(scope, orders[scope] === 'rnd' ? 'seq' : 'rnd'); };
+$('bsc').onclick = function () { setScope(scope === 'sec' ? 'all' : 'sec'); };
+window.togSec = function () { setOrder('sec', orders.sec === 'rnd' ? 'seq' : 'rnd'); };
+syncUI(); $('bs').innerHTML = PLAY;
+function startAt(sc, r) { scope = sc; try { localStorage.setItem('gta6scope', sc); } catch (e) {} deck = [];
+  var i = orders[sc] === 'rnd' ? r[0] + Math.floor(Math.random() * (r[1] - r[0])) : r[0];
+  syncUI(); location.hash = 'v' + i; setTimeout(function () { fs(); startPlay(); }, 50); }
+$('pa').onclick = function () { startAt('all', [0, flat.length]); };
 function fs() {
   var d = document, el = d.documentElement;
   if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
@@ -388,7 +410,7 @@ function stopPlay() {
   playing = false; clearTimeout(playT); $('bs').innerHTML = PLAY;
   if (wake) { wake.release().catch(function () {}); wake = null; }
 }
-window.slideSec = function (si) { location.hash = 'v' + secStart[si]; setTimeout(function () { fs(); startPlay(); }, 50); };
+window.slideSec = function (si) { startAt('sec', [secStart[si], secStart[si + 1]]); };
 document.addEventListener('visibilitychange', function () { if (playing && !document.hidden && navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; }).catch(function () {}); });
 document.addEventListener('keydown', function (e) {
   if (cur < 0) return;
